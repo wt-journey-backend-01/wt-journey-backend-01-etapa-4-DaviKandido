@@ -1,310 +1,306 @@
 <sup>Esse é um feedback gerado por IA, ele pode conter erros.</sup>
 
-Você tem 8 créditos restantes para usar o sistema de feedback AI.
+Você tem 7 créditos restantes para usar o sistema de feedback AI.
 
 # Feedback para DaviKandido:
 
-Nota final: **48.7/100**
+Nota final: **50.5/100**
 
-# Feedback para DaviKandido 🚓✨
+# Feedback para DaviKandido 🚔✨
 
-Olá, Davi! Primeiramente, parabéns pelo esforço e pelo trabalho entregue até aqui! 🎉 Você conseguiu implementar vários pontos importantes da autenticação com JWT, hashing de senha com bcrypt, e a estrutura do projeto está muito bem organizada, respeitando a arquitetura MVC que é fundamental para projetos Node.js escaláveis. Isso é um grande mérito! 👏
-
-Também quero destacar que você passou em todos os testes básicos relacionados a criação, login, logout e deleção de usuários, além de proteger as rotas com o middleware de autenticação. Isso mostra que sua base de segurança está funcionando, o que é essencial para qualquer API profissional. 🚀
+Olá, Davi! Primeiro, parabéns pelo empenho até aqui! 🎉 Você estruturou um projeto robusto, com várias funcionalidades importantes para uma API segura e profissional. Além disso, você conseguiu passar TODOS os testes base relacionados aos usuários, o que é uma vitória enorme! 👏 Isso mostra que sua implementação de autenticação, hash de senha e manipulação de usuários está muito bem feita.
 
 ---
 
-## Análise dos Testes que Falharam e Causas Raiz
+## 🎯 Conquistas Bônus que você já alcançou
 
-### 1. **Erro 400 ao tentar criar um usuário com e-mail já em uso**
+- Implementação correta da criação, login e logout de usuários com JWT.
+- Validação rigorosa da senha no cadastro de usuários, cobrindo diversos casos.
+- Middleware de autenticação funcionando e protegendo as rotas.
+- Exclusão de usuários funcionando com status 204.
+- Uso correto de cookies HTTP-only para armazenar o token JWT.
+- Documentação clara e detalhada no `INSTRUCTIONS.md`.
 
-**Falha:** O teste espera status code **400 BAD REQUEST** quando um email já está cadastrado, mas seu código retorna status **409 CONFLICT**.
-
-**Por quê?**
-
-No seu `authController.js`, no método `signUp`, quando encontra um usuário existente, você está disparando:
-
-```js
-return next(
-  new ApiError('Usuario ja cadastrado', 409, {
-    email: 'Email ja cadastrado',
-  })
-);
-```
-
-O teste do projeto exige que o código retorne **400** para esse caso, não 409. A diferença é importante porque o teste está validando exatamente o status correto.
-
-**Como corrigir?**
-
-Altere o status para 400 para atender ao requisito:
-
-```js
-return next(
-  new ApiError('Usuário já cadastrado', 400, {
-    email: 'Email já cadastrado',
-  })
-);
-```
-
-Assim, você atende à especificação do teste e evita falha.
+Parabéns mesmo! Isso é crucial para a segurança da aplicação e você mandou bem nisso! 🚀
 
 ---
 
-### 2. **Falha em testes de criação e listagem de agentes (status 201, 200, dados inalterados)**
+## ⚠️ Análise dos Testes que Falharam
 
-Você tem vários testes que falharam relacionados a agentes:
+Você teve falhas em TODOS os testes relacionados a **agentes** e **casos**. Isso indica que, apesar da parte de usuários estar correta, a integração e manipulação das entidades principais da aplicação (agentes e casos) ainda precisam de ajustes.
 
-- Criar agentes corretamente com status 201 e dados inalterados
-- Listar todos agentes com status 200 e dados corretos
-- Buscar agente por ID com status 200 e dados corretos
-- Atualizar agente com PUT e PATCH com status 200 e dados corretos
-- Deletar agente com status 204 e corpo vazio
-
-**Análise:**
-
-Seu código do `agentesController.js` e `agentesRepository.js` está bem estruturado, mas há um ponto importante:
-
-No `createAgente` você está fazendo:
-
-```js
-const agenteCreado = await agentesRepository.create(agente);
-res.status(201).json(agenteCreado);
-```
-
-Isso está correto, mas o teste pode estar esperando que o campo `id` seja retornado e que os dados sejam exatamente os enviados, sem modificações.
-
-**Possível causa raiz:**
-
-- Você não está validando o payload de entrada para agentes no controller, mas está usando o middleware `validateSchema(agentePostSchema)` na rota, isso é bom.
-- Verifique se o agente criado está retornando o ID corretamente (que seu repositório parece fazer com `.returning('*')`).
-- Certifique-se que o objeto retornado do banco está exatamente no formato esperado (sem campos extras ou faltantes).
-
-No entanto, o problema mais comum nesses casos é que o teste pode estar esperando o campo `id` como string (uuid) ou número, e o banco está retornando de forma diferente.
-
-**Sugestão:**
-
-- Verifique se o banco está retornando o `id` como número inteiro (que é o esperado, já que você usa `increments()` no migration).
-- Confirme se no teste é esperado o mesmo tipo.
-- Caso o teste espere uuid, você precisaria ajustar o migration e o código.
-
-No seu caso, parece que o ID é inteiro, então deve estar ok.
+Vou listar os grupos de testes que falharam e analisar o que provavelmente está causando essas falhas:
 
 ---
 
-### 3. **Falha em testes que esperam status 400 para payload incorreto e status 404 para recursos inexistentes**
+### 1. AGENTS (Agentes)
 
-Você tem testes que falharam porque o código não está retornando:
+**Testes que falharam:**
 
-- 400 para payloads inválidos (ex: criar agente com payload incorreto)
-- 404 para IDs inválidos ou inexistentes (ex: buscar agente com ID inválido)
+- Criação, listagem, busca por ID, atualização (PUT e PATCH) e exclusão de agentes.
+- Validações de payload incorreto (status 400).
+- Validação de IDs inválidos (status 404).
+- Falha ao acessar rotas sem token JWT (status 401).
+- Atualizações e deleção de agentes inexistentes (status 404).
 
-**Análise:**
+**Possíveis causas e análise:**
 
-- Você usa o middleware `validateSchema` para validar os schemas com Zod, o que é ótimo.
-- Porém, não vi no controller um tratamento específico para IDs inválidos (ex: quando o ID não é numérico ou tem formato errado).
-- Quando você chama `findById(id)` no repositório, se o ID for inválido (ex: string que não pode ser interpretada como número), o banco pode retornar erro ou simplesmente `null`.
-- O ideal é validar o formato do ID antes de chamar o banco para evitar erros inesperados.
+- **Status 401 (não autorizado) em rotas de agentes**: Seu middleware `authenticateToken` está correto, mas é importante garantir que ele está aplicado em TODAS as rotas de agentes. Você fez isso no arquivo `routes/agentesRoutes.js` com `authenticateToken` em todas as rotas, o que está certo.
 
-**Exemplo de validação de ID no controller:**
+- **Status 400 em payloads incorretos**: Você está usando o middleware `validateSchema` com schemas Zod para validar os dados. Isso está correto, mas é importante garantir que os schemas `agentePostSchema`, `agentePutSchema` e `agentePatchSchema` estejam bem definidos para cobrir todos os campos obrigatórios e tipos.  
+  → **Recomendo revisar os schemas e garantir que eles estejam alinhados com os dados esperados, e que o middleware `validateSchema` esteja corretamente implementado.**
 
-```js
-const id = Number(req.params.id);
-if (isNaN(id)) {
-  return next(new ApiError('ID inválido', 400));
-}
-```
+- **Status 404 para agentes inexistentes ou IDs inválidos**: No controller você já faz a validação do ID com `Number(req.params.id)` e checa se é `NaN`, retornando 400. Isso está correto.  
+  Porém, o teste falha se o agente não existe no banco. Você está fazendo essa verificação, mas pode haver algum problema na query do repositório, ou na forma como você retorna o resultado.  
+  Por exemplo, no `agentesRepository.js`, o método `findById` está assim:
 
-Assim você evita erros de banco e retorna o status correto.
+  ```js
+  const findById = async (id) => await db('agentes').where({ id }).first();
+  ```
+
+  Isso está correto, mas certifique-se que o banco está populado corretamente e que o ID buscado existe.
+
+- **Criação e atualização de agentes**: Os métodos `create`, `update` e `updatePartial` parecem corretos, mas atenção para o uso do `.returning('*')` que funciona no PostgreSQL. Se estiver usando outro banco ou ambiente, pode não funcionar.  
+
+  Além disso, no controller, ao criar um agente, você simplesmente retorna o objeto criado, mas não valida se o payload está correto antes. Pode ser que o middleware de validação não esteja bloqueando payloads incorretos.
+
+- **Possível falha na migração da tabela `agentes`**: Você tem a migration `20250810210628_create_agentes.js` que cria a tabela. Certifique-se que a migration foi executada corretamente e que a tabela está no banco.
 
 ---
 
-### 4. **Falha em testes que esperam status 401 para rotas protegidas sem JWT**
+### 2. CASES (Casos)
 
-Você passou nesses testes, o que é ótimo!
+**Testes que falharam:**
 
----
+- Criação, listagem, busca por ID, atualização (PUT e PATCH) e exclusão de casos.
+- Validação de payload incorreto (status 400).
+- Validação de IDs inválidos e inexistentes (status 404).
+- Filtragem por status e agente_id.
+- Busca por palavra-chave.
+- Falha ao acessar rotas sem token JWT (status 401).
 
-### 5. **Falha em testes de filtros, buscas e endpoints extras (bônus)**
+**Possíveis causas e análise:**
 
-- Filtragem de casos por status e agente
-- Busca de casos por keywords
-- Endpoint `/usuarios/me` para retornar dados do usuário autenticado
+- O middleware de autenticação está aplicado nas rotas de casos, o que está correto.
 
-**Análise:**
+- Validações de payload e IDs seguem o mesmo padrão que agentes, com uso de Zod e verificação no controller.
 
-Você passou nos testes base, mas não nos bônus que cobrem esses filtros e endpoint `/usuarios/me`.
+- No repositório `casosRepository.js`, o método `findAll` usa o Knex com várias condições, porém note que:
 
-**Por quê?**
-
-- No seu código, não encontrei implementação do endpoint `/usuarios/me`.
-- Também não vi lógica específica para filtragem detalhada de casos e agentes além do básico.
-- Para o endpoint `/usuarios/me`, você precisa criar uma rota e controller que retorne `req.user` (dados do JWT) e buscar os dados completos do usuário no banco.
-
-**Exemplo simples para `/usuarios/me`:**
-
-Na rota `usuariosRoutes.js`:
-
-```js
-const express = require('express');
-const router = express.Router();
-const { authenticateToken } = require('../middlewares/authMiddleware');
-const usuariosController = require('../controllers/usuariosController');
-
-router.get('/me', authenticateToken, usuariosController.getMe);
-
-module.exports = router;
-```
-
-No controller `usuariosController.js`:
-
-```js
-const usuariosRepository = require('../repositories/usuariosRepository');
-
-const getMe = async (req, res, next) => {
-  try {
-    const userId = req.user.id;
-    const user = await usuariosRepository.findById(userId);
-    if (!user) {
-      return next(new ApiError('Usuário não encontrado', 404));
-    }
-    res.status(200).json(user);
-  } catch (error) {
-    next(error);
+  ```js
+  if (agente_id) {
+    query.where('agente_id', agente_id);
   }
-};
+  ```
 
-module.exports = {
-  getMe,
-};
-```
+  Atenção para o fato de que `agente_id` pode ser uma string (vindo da query), e no banco é inteiro. Talvez seja necessário converter para número para evitar problemas. O mesmo vale para `status` e `q`.
+
+- A tabela `casos` depende da tabela `agentes` via chave estrangeira `agente_id`, então se a tabela agentes estiver vazia ou com dados incorretos, os casos podem não ser criados corretamente.
+
+- A migration para casos (`20250810213103_create_casos.js`) parece correta, mas novamente, certifique-se que foi executada.
 
 ---
 
-## Pontos de Atenção na Estrutura do Projeto
+### 3. Sobre a Estrutura de Diretórios
 
-Sua estrutura de pastas está muito próxima do esperado, parabéns! 🙌
+Você tem uma estrutura muito próxima da esperada, o que é ótimo! Só algumas observações:
 
-Porém, notei que no arquivo `server.js` você importou um `usuariosRouter`:
+- No `server.js` você importa `authController` da pasta `routes`:
+
+  ```js
+  const authController = require('./routes/authRoutes');
+  ```
+
+  O nome da constante deveria ser `authRoutes` para manter coerência, pois é uma rota, não um controller.
+
+- Você tem um arquivo `usuariosRoutes.js` e `usuariosRepository.js`, mas não vi o controller `usuariosController.js` no seu código enviado. Se ele existir, ótimo, se não, pode ser um ponto a melhorar.
+
+- No seu `INSTRUCTIONS.md` você tem uma seção detalhada, mas a estrutura do projeto no arquivo `project_structure.txt` mostra arquivos extras como `usuariosController.js` e `validateSchema.js` que não foram enviados para análise. Certifique-se que esses arquivos existem e estão funcionando.
+
+---
+
+## ⚙️ Pontos Técnicos que Recomendo Revisar
+
+### 1. **Validação dos Schemas Zod**
+
+Se os testes de agentes e casos falham por payload inválido, pode ser que os schemas não estejam cobrindo todos os casos. Veja um exemplo de como um schema para agente pode ser:
 
 ```js
-const usuariosRouter = require('./routes/usuariosRoutes');
+const { z } = require('zod');
+
+const agentePostSchema = z.object({
+  nome: z.string().min(1, 'Nome é obrigatório'),
+  dataDeIncorporacao: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Data deve estar no formato YYYY-MM-DD'),
+  cargo: z.string().min(1, 'Cargo é obrigatório'),
+});
 ```
 
-Mas na estrutura esperada, essa rota é opcional (bônus) e você deve garantir que exista o arquivo `routes/usuariosRoutes.js` e o controller correspondente (`usuariosController.js`).
-
-Se essa rota não estiver implementada ou estiver incompleta, isso pode afetar testes bônus.
+Garanta que o middleware `validateSchema` está chamando `schema.parse(req.body)` e retornando o erro com status 400 em caso de falha.
 
 ---
 
-## Recomendações e Recursos para Aprimorar seu Projeto
+### 2. **Middleware de Autenticação**
 
-1. Para entender melhor o uso do **JWT** e autenticação com **bcrypt**, recomendo fortemente este vídeo, feito pelos meus criadores, que explica os conceitos fundamentais de autenticação:  
-▶️ https://www.youtube.com/watch?v=Q4LQOfYwujk
-
-2. Para aprofundar no uso do **JWT na prática**, este conteúdo é excelente:  
-▶️ https://www.youtube.com/watch?v=keS0JWOypIU
-
-3. Para aprimorar o uso do **bcrypt** e **JWT** juntos, este vídeo ajuda bastante:  
-▶️ https://www.youtube.com/watch?v=L04Ln97AwoY
-
-4. Se você quiser melhorar o entendimento e a organização da arquitetura MVC e estrutura do seu projeto Node.js, este vídeo é muito útil:  
-▶️ https://www.youtube.com/watch?v=bGN_xNc4A1k&t=3s
-
-5. Para resolver dúvidas sobre configuração do banco, migrations e seeds com Knex e Docker, estes vídeos são muito didáticos:  
-- Configuração de banco com Docker e Knex: https://www.youtube.com/watch?v=uEABDBQV-Ek&t=1s  
-- Documentação oficial do Knex sobre migrations: https://www.youtube.com/watch?v=dXWy_aGCW1E  
-- Guia detalhado do Knex Query Builder: https://www.youtube.com/watch?v=GLwHSs7t3Ns&t=4s  
-- Seeds com Knex: https://www.youtube.com/watch?v=AJrK90D5el0&t=9s
-
----
-
-## Resumo dos Principais Pontos para Melhorar 🚦
-
-- **Ajustar status code para email duplicado no cadastro de usuário:** de 409 para 400 para atender o teste.  
-- **Validar IDs recebidos nas rotas para evitar erros e retornar 400 para IDs inválidos.**  
-- **Implementar endpoint `/usuarios/me` para retornar dados do usuário autenticado.**  
-- **Revisar retorno dos dados nas criações e atualizações para garantir que os dados estejam exatamente conforme esperado (incluindo o campo `id`).**  
-- **Implementar filtros e buscas avançadas para casos e agentes para passar testes bônus.**  
-- **Garantir que o middleware de autenticação esteja aplicado corretamente em todas as rotas protegidas.**  
-
----
-
-## Para finalizar...
-
-Davi, você está no caminho certo! Seu código está bem organizado e você já implementou a base de autenticação e segurança, que é o coração desse desafio. Com pequenos ajustes nos detalhes de status code, validações e endpoints extras, você vai destravar todos os testes e entregar uma API robusta e profissional. 🚀
-
-Continue explorando, testando e iterando seu código. A prática constante é o que vai transformar seu aprendizado em maestria. Estou aqui para te ajudar sempre que precisar! 💪😊
-
-Grande abraço e bons códigos! 👮‍♂️✨
-
----
-
-Se precisar de algo, só chamar! 😉
-
----
-
-# Trecho para corrigir status code 409 para 400 no `authController.js`:
+No seu middleware `authMiddleware.js`, você tenta obter o token do cookie `token`:
 
 ```js
-if (user) {
-  return next(
-    new ApiError('Usuário já cadastrado', 400, {
-      email: 'Email já cadastrado',
-    })
-  );
+const cookieToken = req.cookies?.token;
+```
+
+Mas no controller de login você salva o token no cookie com o nome `'acess_token'`:
+
+```js
+res.cookie('acess_token', acess_token, { ... });
+```
+
+Ou seja, o middleware está buscando o cookie com nome diferente do que foi salvo. Isso fará com que o token nunca seja encontrado no cookie, e você só aceitará o token via header.
+
+**Solução: alinhe os nomes:**
+
+No middleware:
+
+```js
+const cookieToken = req.cookies?.acess_token;
+```
+
+Assim o token será capturado corretamente.
+
+---
+
+### 3. **Resposta do Login**
+
+No seu controller `authController.js`, na função `login`, você retorna o token assim:
+
+```js
+res.status(200).json({
+  message: 'Login de usuário realizado com sucesso',
+  acess_token: acess_token,
+});
+```
+
+Mas o teste espera o objeto com a propriedade `acess_token` (note que está com "c" minúsculo, o correto é "access_token" com dois "c"?). Além disso, o exemplo no `INSTRUCTIONS.md` mostra:
+
+```json
+{
+  "acess_token": "token aqui"
 }
 ```
 
-# Exemplo de validação de ID no controller:
+Se o teste espera exatamente a propriedade `acess_token`, está ok. Só fique atento para usar sempre o mesmo nome (não misture `access_token` e `acess_token`).
 
-```js
-const id = Number(req.params.id);
-if (isNaN(id)) {
-  return next(new ApiError('ID inválido', 400));
-}
+---
+
+### 4. **Migrações e Seeds**
+
+Certifique-se que as migrations foram executadas na ordem correta, e que as tabelas `agentes`, `casos` e `usuarios` existem e estão populadas conforme esperado.
+
+Você tem a migration `20250827212350_create_usuarios.js` para usuários, e a migration `20250809203342_solution_migrations.js` que chama as outras três em sequência. Use sempre o comando:
+
+```bash
+npx knex migrate:up 20250809203342_solution_migrations.js
 ```
 
-# Exemplo simples para endpoint `/usuarios/me`:
+para garantir que todas as tabelas estejam criadas.
 
-**routes/usuariosRoutes.js**
+---
+
+### 5. **Conversão de Tipos nas Queries**
+
+Nas funções que recebem query params (exemplo: `agente_id` em casos), faça a conversão para número:
 
 ```js
-const express = require('express');
-const router = express.Router();
-const usuariosController = require('../controllers/usuariosController');
-const { authenticateToken } = require('../middlewares/authMiddleware');
-
-router.get('/me', authenticateToken, usuariosController.getMe);
-
-module.exports = router;
+const agenteId = req.query.agente_id ? Number(req.query.agente_id) : null;
 ```
 
-**controllers/usuariosController.js**
+Isso evita erros de comparação com string e número no banco.
+
+---
+
+## 👨‍🏫 Recomendações de Recursos para Aprimorar
+
+- Para entender melhor a **configuração do banco e execução das migrations com Knex e Docker**, recomendo este vídeo muito didático:  
+  https://www.youtube.com/watch?v=uEABDBQV-Ek&t=1s
+
+- Para fortalecer sua base em **autenticação JWT e uso de bcrypt**, assista este vídeo, feito pelos meus criadores, que explica muito bem os conceitos e a prática:  
+  https://www.youtube.com/watch?v=Q4LQOfYwujk
+
+- Para aprofundar na manipulação de dados com **Knex Query Builder**, veja este guia detalhado:  
+  https://www.youtube.com/watch?v=GLwHSs7t3Ns&t=4s
+
+- Para organizar seu projeto com uma boa **arquitetura MVC em Node.js**, este vídeo é excelente:  
+  https://www.youtube.com/watch?v=bGN_xNc4A1k&t=3s
+
+---
+
+## 📋 Resumo dos Principais Pontos para Melhorar
+
+- [ ] **Corrigir o nome do cookie no middleware de autenticação** para `acess_token`, alinhando com o que é salvo no login. Isso pode estar bloqueando o acesso às rotas protegidas.
+
+- [ ] **Revisar os schemas Zod usados para validar agentes e casos**, garantindo que cobrem todos os campos obrigatórios e tipos corretos, para evitar payloads inválidos.
+
+- [ ] **Garantir que as migrations foram executadas corretamente**, especialmente as tabelas `agentes` e `casos`, para que os dados existam no banco.
+
+- [ ] **Converter parâmetros de query string para o tipo correto (número) antes de usar nas queries**, evitando problemas de comparação no banco.
+
+- [ ] **Revisar as respostas dos endpoints para garantir que o formato e nomes das propriedades estejam exatamente conforme esperado nos testes**, especialmente tokens JWT.
+
+- [ ] **Verificar a existência e uso correto do controller `usuariosController.js` e demais arquivos utilitários**, para manter a estrutura coerente.
+
+---
+
+## Finalizando 🚀
+
+Davi, você está muito perto de entregar uma aplicação completa e segura! A base está muito boa, principalmente no que toca usuários e autenticação. Agora é só ajustar os detalhes que mencionei para agentes e casos, e você vai destravar todos os testes.  
+
+Continue firme, revise com calma cada ponto e não hesite em usar os recursos que te indiquei para aprofundar seus conhecimentos! Você está no caminho certo para se tornar um mestre em Node.js e APIs seguras! 💪✨
+
+Se precisar de mais ajuda, estou aqui para te apoiar! 😉
+
+Abraço forte e bons códigos! 👮‍♂️👩‍💻
+
+---
+
+# Trecho com a correção do cookie no middleware `authMiddleware.js`:
 
 ```js
-const usuariosRepository = require('../repositories/usuariosRepository');
-const ApiError = require('../utils/errorHandler');
-
-const getMe = async (req, res, next) => {
+function authenticateToken(req, res, next) {
   try {
-    const user = await usuariosRepository.findById(req.user.id);
-    if (!user) {
-      return next(new ApiError('Usuário não encontrado', 404));
-    }
-    res.status(200).json(user);
-  } catch (error) {
-    next(error);
-  }
-};
+    // Corrigido para buscar o cookie com nome 'acess_token'
+    const cookieToken = req.cookies?.acess_token;
+    const authHeader = req.headers['authorization'];
+    const headerToken = authHeader && authHeader.split(' ')[1];
 
-module.exports = {
-  getMe,
-};
+    const acess_token = cookieToken || headerToken;
+
+    if (!acess_token) {
+      return next(
+        new ApiError('Acess_token não fornecido.', 401, {
+          acess_token: 'Acess_token nao fornecido',
+        })
+      );
+    }
+
+    jwt.verify(acess_token, process.env.JWT_SECRET || 'secret', (err, user) => {
+      if (err) {
+        return next(
+          new ApiError('Acess_token inválido ou expirado.', 401, {
+            acess_token: err.message,
+          })
+        );
+      }
+
+      req.user = user;
+      next();
+    });
+  } catch (error) {
+    return next(new ApiError('Error authenticating user', 401, error.message));
+  }
+}
 ```
 
 ---
 
-Continue firme, você está quase lá! 🚀✨
+Continue assim, você está indo muito bem! 👏👏👏
 
 > Caso queira tirar uma dúvida específica, entre em contato com o Chapter no nosso [discord](https://discord.gg/DryuHVnz).
 
