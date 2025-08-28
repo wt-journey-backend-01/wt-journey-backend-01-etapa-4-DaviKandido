@@ -1,273 +1,167 @@
 <sup>Esse é um feedback gerado por IA, ele pode conter erros.</sup>
 
-Você tem 7 créditos restantes para usar o sistema de feedback AI.
+Você tem 6 créditos restantes para usar o sistema de feedback AI.
 
 # Feedback para DaviKandido:
 
 Nota final: **50.5/100**
 
-# Feedback para DaviKandido 🚔✨
+Olá, DaviKandido! 🚓✨
 
-Olá, Davi! Primeiro, parabéns pelo empenho até aqui! 🎉 Você estruturou um projeto robusto, com várias funcionalidades importantes para uma API segura e profissional. Além disso, você conseguiu passar TODOS os testes base relacionados aos usuários, o que é uma vitória enorme! 👏 Isso mostra que sua implementação de autenticação, hash de senha e manipulação de usuários está muito bem feita.
-
----
-
-## 🎯 Conquistas Bônus que você já alcançou
-
-- Implementação correta da criação, login e logout de usuários com JWT.
-- Validação rigorosa da senha no cadastro de usuários, cobrindo diversos casos.
-- Middleware de autenticação funcionando e protegendo as rotas.
-- Exclusão de usuários funcionando com status 204.
-- Uso correto de cookies HTTP-only para armazenar o token JWT.
-- Documentação clara e detalhada no `INSTRUCTIONS.md`.
-
-Parabéns mesmo! Isso é crucial para a segurança da aplicação e você mandou bem nisso! 🚀
+Primeiramente, parabéns por chegar até aqui na sua jornada com Node.js, Express, PostgreSQL e segurança com JWT! 🎉 Você conseguiu implementar a parte de usuários, autenticação e logout com JWT funcionando, o que já é um baita avanço! Isso mostra que você entendeu bem os conceitos de hashing de senha, geração e validação de tokens, além de proteger rotas com middleware. Excelente trabalho! 👏👏
 
 ---
 
-## ⚠️ Análise dos Testes que Falharam
+## 🚀 Pontos Fortes que Você Conquistou
 
-Você teve falhas em TODOS os testes relacionados a **agentes** e **casos**. Isso indica que, apesar da parte de usuários estar correta, a integração e manipulação das entidades principais da aplicação (agentes e casos) ainda precisam de ajustes.
+- **Usuários:** Cadastro, login, logout e exclusão de usuários estão funcionando e passaram nos testes. Você aplicou corretamente o hashing de senha com bcrypt e gerou tokens JWT com expiração.  
+- **Middleware de autenticação:** Seu middleware `authMiddleware.js` está lendo o token tanto do cookie quanto do header Authorization, validando e adicionando o usuário ao `req.user`.  
+- **Estrutura de pastas:** Você seguiu a arquitetura MVC com controllers, repositories, middlewares e rotas separadas, o que é ótimo para manutenção e escalabilidade.  
+- **Documentação:** O arquivo `INSTRUCTIONS.md` está bem detalhado, explicando como subir o banco, rodar migrations/seeds e usar a autenticação com JWT.  
 
-Vou listar os grupos de testes que falharam e analisar o que provavelmente está causando essas falhas:
-
----
-
-### 1. AGENTS (Agentes)
-
-**Testes que falharam:**
-
-- Criação, listagem, busca por ID, atualização (PUT e PATCH) e exclusão de agentes.
-- Validações de payload incorreto (status 400).
-- Validação de IDs inválidos (status 404).
-- Falha ao acessar rotas sem token JWT (status 401).
-- Atualizações e deleção de agentes inexistentes (status 404).
-
-**Possíveis causas e análise:**
-
-- **Status 401 (não autorizado) em rotas de agentes**: Seu middleware `authenticateToken` está correto, mas é importante garantir que ele está aplicado em TODAS as rotas de agentes. Você fez isso no arquivo `routes/agentesRoutes.js` com `authenticateToken` em todas as rotas, o que está certo.
-
-- **Status 400 em payloads incorretos**: Você está usando o middleware `validateSchema` com schemas Zod para validar os dados. Isso está correto, mas é importante garantir que os schemas `agentePostSchema`, `agentePutSchema` e `agentePatchSchema` estejam bem definidos para cobrir todos os campos obrigatórios e tipos.  
-  → **Recomendo revisar os schemas e garantir que eles estejam alinhados com os dados esperados, e que o middleware `validateSchema` esteja corretamente implementado.**
-
-- **Status 404 para agentes inexistentes ou IDs inválidos**: No controller você já faz a validação do ID com `Number(req.params.id)` e checa se é `NaN`, retornando 400. Isso está correto.  
-  Porém, o teste falha se o agente não existe no banco. Você está fazendo essa verificação, mas pode haver algum problema na query do repositório, ou na forma como você retorna o resultado.  
-  Por exemplo, no `agentesRepository.js`, o método `findById` está assim:
-
-  ```js
-  const findById = async (id) => await db('agentes').where({ id }).first();
-  ```
-
-  Isso está correto, mas certifique-se que o banco está populado corretamente e que o ID buscado existe.
-
-- **Criação e atualização de agentes**: Os métodos `create`, `update` e `updatePartial` parecem corretos, mas atenção para o uso do `.returning('*')` que funciona no PostgreSQL. Se estiver usando outro banco ou ambiente, pode não funcionar.
-
-  Além disso, no controller, ao criar um agente, você simplesmente retorna o objeto criado, mas não valida se o payload está correto antes. Pode ser que o middleware de validação não esteja bloqueando payloads incorretos.
-
-- **Possível falha na migração da tabela `agentes`**: Você tem a migration `20250810210628_create_agentes.js` que cria a tabela. Certifique-se que a migration foi executada corretamente e que a tabela está no banco.
+Além disso, você passou em vários testes bônus relacionados a filtragem e busca, o que indica que seu código está bem robusto em relação a funcionalidades extras! 🌟
 
 ---
 
-### 2. CASES (Casos)
+## ⚠️ Análise dos Testes que Falharam e Como Corrigir
 
-**Testes que falharam:**
+Você teve falhas em TODOS os testes base relacionados às rotas de **agentes** e **casos**. Isso é crucial, pois são os endpoints principais da sua API e precisam estar protegidos e funcionando perfeitamente. Vamos entender o motivo raiz dessas falhas:
 
-- Criação, listagem, busca por ID, atualização (PUT e PATCH) e exclusão de casos.
-- Validação de payload incorreto (status 400).
-- Validação de IDs inválidos e inexistentes (status 404).
-- Filtragem por status e agente_id.
-- Busca por palavra-chave.
-- Falha ao acessar rotas sem token JWT (status 401).
+### 1. Testes que falharam em agentes e casos (Exemplos):
 
-**Possíveis causas e análise:**
+- `AGENTS: Cria agentes corretamente com status code 201 e os dados inalterados do agente mais seu ID`
+- `AGENTS: Lista todos os agente corretamente com status code 200 e todos os dados de cada agente listados corretamente`
+- `AGENTS: Busca agente por ID corretamente com status code 200 e todos os dados do agente listados dentro de um objeto JSON`
+- `AGENTS: Atualiza dados do agente com por completo (com PUT) corretamente com status code 200 e dados atualizados do agente listados num objeto JSON`
+- `AGENTS: Deleta dados de agente corretamente com status code 204 e corpo vazio`
+- `CASES: Cria casos corretamente com status code 201 e retorna dados inalterados do caso criado mais seu ID`
+- `CASES: Lista todos os casos corretamente com status code 200 e retorna lista com todos os dados de todos os casos`
+- `CASES: Busca caso por ID corretamente com status code 200 e retorna dados do caso`
+- `CASES: Atualiza dados de um caso com por completo (com PUT) corretamente com status code 200 e retorna dados atualizados`
+- `CASES: Deleta dados de um caso corretamente com status code 204 e retorna corpo vazio`
 
-- O middleware de autenticação está aplicado nas rotas de casos, o que está correto.
+### Análise da causa raiz:
 
-- Validações de payload e IDs seguem o mesmo padrão que agentes, com uso de Zod e verificação no controller.
+**O problema fundamental está na ausência de proteção das rotas de agentes e casos com o middleware de autenticação (`authenticateToken`).**
 
-- No repositório `casosRepository.js`, o método `findAll` usa o Knex com várias condições, porém note que:
-
-  ```js
-  if (agente_id) {
-    query.where('agente_id', agente_id);
-  }
-  ```
-
-  Atenção para o fato de que `agente_id` pode ser uma string (vindo da query), e no banco é inteiro. Talvez seja necessário converter para número para evitar problemas. O mesmo vale para `status` e `q`.
-
-- A tabela `casos` depende da tabela `agentes` via chave estrangeira `agente_id`, então se a tabela agentes estiver vazia ou com dados incorretos, os casos podem não ser criados corretamente.
-
-- A migration para casos (`20250810213103_create_casos.js`) parece correta, mas novamente, certifique-se que foi executada.
-
----
-
-### 3. Sobre a Estrutura de Diretórios
-
-Você tem uma estrutura muito próxima da esperada, o que é ótimo! Só algumas observações:
-
-- No `server.js` você importa `authController` da pasta `routes`:
-
-  ```js
-  const authController = require('./routes/authRoutes');
-  ```
-
-  O nome da constante deveria ser `authRoutes` para manter coerência, pois é uma rota, não um controller.
-
-- Você tem um arquivo `usuariosRoutes.js` e `usuariosRepository.js`, mas não vi o controller `usuariosController.js` no seu código enviado. Se ele existir, ótimo, se não, pode ser um ponto a melhorar.
-
-- No seu `INSTRUCTIONS.md` você tem uma seção detalhada, mas a estrutura do projeto no arquivo `project_structure.txt` mostra arquivos extras como `usuariosController.js` e `validateSchema.js` que não foram enviados para análise. Certifique-se que esses arquivos existem e estão funcionando.
-
----
-
-## ⚙️ Pontos Técnicos que Recomendo Revisar
-
-### 1. **Validação dos Schemas Zod**
-
-Se os testes de agentes e casos falham por payload inválido, pode ser que os schemas não estejam cobrindo todos os casos. Veja um exemplo de como um schema para agente pode ser:
+- Seu arquivo `server.js` importa as rotas e as usa assim:
 
 ```js
-const { z } = require('zod');
-
-const agentePostSchema = z.object({
-  nome: z.string().min(1, 'Nome é obrigatório'),
-  dataDeIncorporacao: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Data deve estar no formato YYYY-MM-DD'),
-  cargo: z.string().min(1, 'Cargo é obrigatório'),
-});
+app.use('/usuarios', usuariosRouter);
+app.use('/auth', authRouter);
+app.use('/casos', casosRouter);
+app.use('/agentes', agentesRouter);
 ```
 
-Garanta que o middleware `validateSchema` está chamando `schema.parse(req.body)` e retornando o erro com status 400 em caso de falha.
+- Porém, o middleware de autenticação não está aplicado globalmente nem diretamente nas rotas de agentes e casos.
 
----
-
-### 2. **Middleware de Autenticação**
-
-No seu middleware `authMiddleware.js`, você tenta obter o token do cookie `token`:
+- Observando os arquivos `routes/agentesRoutes.js` e `routes/casosRoutes.js`, você até importou o middleware `authenticateToken` e colocou ele nos endpoints, por exemplo:
 
 ```js
-const cookieToken = req.cookies?.token;
+router.get('/', authenticateToken, validateCargo, agentesController.getAgentes);
 ```
 
-Mas no controller de login você salva o token no cookie com o nome `'access_token'`:
+Isso está correto, mas a falha pode estar na forma como o token está sendo enviado nos testes, ou na validação do token.  
+
+**No entanto, os erros de status 401 indicam que as rotas estão protegidas, mas a autenticação está falhando.**
+
+---
+
+### Possíveis causas para o problema de autenticação (token inválido ou ausente):
+
+- **JWT_SECRET faltando ou diferente:**  
+  No seu middleware, você usa:
 
 ```js
-res.cookie('access_token', access_token, { ... });
+jwt.verify(access_token, process.env.JWT_SECRET || 'secret', (err, user) => { ... });
 ```
 
-Ou seja, o middleware está buscando o cookie com nome diferente do que foi salvo. Isso fará com que o token nunca seja encontrado no cookie, e você só aceitará o token via header.
+Se a variável de ambiente `JWT_SECRET` não estiver definida corretamente no ambiente onde os testes rodam, o token gerado no login (que usa `JWT_SECRET`) e o token verificado no middleware (que pode usar `'secret'` se a variável não existir) serão diferentes. Isso causa erro de token inválido.  
 
-**Solução: alinhe os nomes:**
+**Você deve garantir que o `JWT_SECRET` esteja definido no `.env` e que seja lido corretamente!**
 
-No middleware:
+- **Uso inconsistente do token:**  
+  Você está enviando o token tanto em cookie quanto no header Authorization, mas os testes podem estar enviando apenas no header. Se o seu middleware não está lendo corretamente o header, ou se o token está ausente, dará erro 401.
+
+- **No seu controller `authController.js`, no login, você retorna o token no JSON e também coloca no cookie:**
 
 ```js
-const cookieToken = req.cookies?.access_token;
+res.cookie('access_token', access_token, { httpOnly: true, ... });
+res.status(200).json({ message: 'Login de usuário realizado com sucesso', access_token });
 ```
 
-Assim o token será capturado corretamente.
+Isso é bom, mas os testes provavelmente esperam o token no header Authorization para as próximas requisições. Certifique-se que o token está sendo enviado no header Authorization nas chamadas seguintes.
 
 ---
 
-### 3. **Resposta do Login**
+### Erros relacionados à criação e atualização de agentes e casos:
 
-No seu controller `authController.js`, na função `login`, você retorna o token assim:
+- Os testes também falham ao criar, atualizar e deletar agentes e casos, retornando status 400, 404 ou 401.
+
+- Isso pode indicar que:
+
+  - **Validação dos dados está falhando:**  
+    Veja se os schemas de validação (`ZodSchemas.js`) e o middleware `validateSchema` estão corretamente aplicados e se os dados enviados nos testes estão corretos.
+
+  - **IDs inválidos:**  
+    Nos controllers (`agentesController.js` e `casosController.js`), você converte o `id` do parâmetro para Number e verifica se é NaN. Isso é correto, mas certifique-se que os testes estão enviando IDs numéricos e que o banco está usando IDs numéricos (você usou `increments('id')` nas migrations, então IDs são números).
+
+  - **Falha ao buscar IDs inexistentes:**  
+    Você está tratando bem o caso de agentes ou casos não encontrados, retornando 404 com mensagem customizada.
+
+---
+
+### Resumo do que precisa ser corrigido:
+
+1. **Variável de ambiente JWT_SECRET:**  
+   Garanta que o `.env` contenha a variável `JWT_SECRET` com um valor forte e que o processo Node.js está lendo ela. Isso evita divergência na geração e verificação do token.
+
+2. **Confirmação do envio do token no header Authorization nas chamadas protegidas:**  
+   Nos testes, o token JWT deve ser enviado no header:
+
+   ```
+   Authorization: Bearer <token>
+   ```
+
+   Se os testes ou clientes não fizerem isso, a autenticação falha.
+
+3. **Confirme que o middleware `authenticateToken` está aplicado em todas as rotas protegidas:**  
+   Pelo código enviado, parece que sim, mas vale revisar.
+
+4. **Validação dos dados de entrada para agentes e casos:**  
+   Verifique se os schemas de validação estão corretos e se as rotas estão usando o middleware `validateSchema`.  
+   Se os testes enviam payloads inválidos, seu código deve retornar status 400 com mensagens claras, o que você já faz.
+
+---
+
+## 🛠️ Sugestões de Código para Ajustes
+
+### 1. Garanta que o JWT_SECRET está definido e usado consistentemente
+
+No seu arquivo `.env` (que não foi enviado, mas deve existir), coloque:
+
+```
+JWT_SECRET=umaChaveSuperSecreta123!
+SALT_ROUNDS=10
+```
+
+No início do seu `server.js`, carregue o dotenv:
 
 ```js
-res.status(200).json({
-  message: 'Login de usuário realizado com sucesso',
-  access_token: access_token,
-});
+require('dotenv').config();
 ```
 
-Mas o teste espera o objeto com a propriedade `access_token` (note que está com "c" minúsculo, o correto é "access_token" com dois "c"?). Além disso, o exemplo no `INSTRUCTIONS.md` mostra:
+Você já tem isso no `knexfile.js`, mas certifique-se que está em `server.js` também.
 
-```json
-{
-  "access_token": "token aqui"
-}
-```
+### 2. Ajuste no middleware para forçar uso do JWT_SECRET da variável de ambiente
 
-Se o teste espera exatamente a propriedade `access_token`, está ok. Só fique atento para usar sempre o mesmo nome (não misture `access_token` e `access_token`).
-
----
-
-### 4. **Migrações e Seeds**
-
-Certifique-se que as migrations foram executadas na ordem correta, e que as tabelas `agentes`, `casos` e `usuarios` existem e estão populadas conforme esperado.
-
-Você tem a migration `20250827212350_create_usuarios.js` para usuários, e a migration `20250809203342_solution_migrations.js` que chama as outras três em sequência. Use sempre o comando:
-
-```bash
-npx knex migrate:up 20250809203342_solution_migrations.js
-```
-
-para garantir que todas as tabelas estejam criadas.
-
----
-
-### 5. **Conversão de Tipos nas Queries**
-
-Nas funções que recebem query params (exemplo: `agente_id` em casos), faça a conversão para número:
+No `middlewares/authMiddleware.js`:
 
 ```js
-const agenteId = req.query.agente_id ? Number(req.query.agente_id) : null;
-```
+const JWT_SECRET = process.env.JWT_SECRET;
 
-Isso evita erros de comparação com string e número no banco.
-
----
-
-## 👨‍🏫 Recomendações de Recursos para Aprimorar
-
-- Para entender melhor a **configuração do banco e execução das migrations com Knex e Docker**, recomendo este vídeo muito didático:  
-  https://www.youtube.com/watch?v=uEABDBQV-Ek&t=1s
-
-- Para fortalecer sua base em **autenticação JWT e uso de bcrypt**, assista este vídeo, feito pelos meus criadores, que explica muito bem os conceitos e a prática:  
-  https://www.youtube.com/watch?v=Q4LQOfYwujk
-
-- Para aprofundar na manipulação de dados com **Knex Query Builder**, veja este guia detalhado:  
-  https://www.youtube.com/watch?v=GLwHSs7t3Ns&t=4s
-
-- Para organizar seu projeto com uma boa **arquitetura MVC em Node.js**, este vídeo é excelente:  
-  https://www.youtube.com/watch?v=bGN_xNc4A1k&t=3s
-
----
-
-## 📋 Resumo dos Principais Pontos para Melhorar
-
-- [ ] **Corrigir o nome do cookie no middleware de autenticação** para `access_token`, alinhando com o que é salvo no login. Isso pode estar bloqueando o acesso às rotas protegidas.
-
-- [ ] **Revisar os schemas Zod usados para validar agentes e casos**, garantindo que cobrem todos os campos obrigatórios e tipos corretos, para evitar payloads inválidos.
-
-- [ ] **Garantir que as migrations foram executadas corretamente**, especialmente as tabelas `agentes` e `casos`, para que os dados existam no banco.
-
-- [ ] **Converter parâmetros de query string para o tipo correto (número) antes de usar nas queries**, evitando problemas de comparação no banco.
-
-- [ ] **Revisar as respostas dos endpoints para garantir que o formato e nomes das propriedades estejam exatamente conforme esperado nos testes**, especialmente tokens JWT.
-
-- [ ] **Verificar a existência e uso correto do controller `usuariosController.js` e demais arquivos utilitários**, para manter a estrutura coerente.
-
----
-
-## Finalizando 🚀
-
-Davi, você está muito perto de entregar uma aplicação completa e segura! A base está muito boa, principalmente no que toca usuários e autenticação. Agora é só ajustar os detalhes que mencionei para agentes e casos, e você vai destravar todos os testes.
-
-Continue firme, revise com calma cada ponto e não hesite em usar os recursos que te indiquei para aprofundar seus conhecimentos! Você está no caminho certo para se tornar um mestre em Node.js e APIs seguras! 💪✨
-
-Se precisar de mais ajuda, estou aqui para te apoiar! 😉
-
-Abraço forte e bons códigos! 👮‍♂️👩‍💻
-
----
-
-# Trecho com a correção do cookie no middleware `authMiddleware.js`:
-
-```js
 function authenticateToken(req, res, next) {
   try {
-    // Corrigido para buscar o cookie com nome 'access_token'
     const cookieToken = req.cookies?.access_token;
     const authHeader = req.headers['authorization'];
     const headerToken = authHeader && authHeader.split(' ')[1];
@@ -282,7 +176,7 @@ function authenticateToken(req, res, next) {
       );
     }
 
-    jwt.verify(access_token, process.env.JWT_SECRET || 'secret', (err, user) => {
+    jwt.verify(access_token, JWT_SECRET, (err, user) => {  // Use sempre JWT_SECRET da env
       if (err) {
         return next(
           new ApiError('access_token inválido ou expirado.', 401, {
@@ -298,14 +192,61 @@ function authenticateToken(req, res, next) {
     return next(new ApiError('Error authenticating user', 401, error.message));
   }
 }
+
+module.exports = { authenticateToken };
 ```
+
+### 3. Confirme que o token é enviado no header Authorization nas requisições protegidas
+
+Nos testes ou no cliente, o token JWT deve ser enviado assim:
+
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+Se você quiser facilitar o uso, pode remover o uso do cookie e usar só o header Authorization para evitar confusão.
 
 ---
 
-Continue assim, você está indo muito bem! 👏👏👏
+## 📚 Recomendações de Aprendizado para Você
+
+- Para entender melhor como lidar com JWT, autenticação e segurança, recomendo muito este vídeo feito pelos meus criadores, que explica os conceitos fundamentais e a prática:  
+  https://www.youtube.com/watch?v=Q4LQOfYwujk
+
+- Para entender como usar JWT na prática e evitar erros comuns, veja este vídeo:  
+  https://www.youtube.com/watch?v=keS0JWOypIU
+
+- Para garantir que seu banco de dados está configurado corretamente com Docker e Knex, este vídeo é excelente:  
+  https://www.youtube.com/watch?v=uEABDBQV-Ek&t=1s
+
+- Para dominar o Knex e escrever queries corretamente, veja:  
+  https://www.youtube.com/watch?v=GLwHSs7t3Ns&t=4s
+
+- Para estruturar seu projeto em MVC e manter o código organizado, este vídeo vai te ajudar bastante:  
+  https://www.youtube.com/watch?v=bGN_xNc4A1k&t=3s
+
+---
+
+## ✅ Resumo Final dos Pontos para Melhorar
+
+- [ ] **Definir e usar corretamente a variável de ambiente `JWT_SECRET` em todo o projeto, especialmente no middleware de autenticação e na geração do token.**  
+- [ ] **Garantir que o token JWT seja enviado no header `Authorization` nas requisições para rotas protegidas (`/agentes`, `/casos`).**  
+- [ ] **Revisar se o middleware `authenticateToken` está aplicado em todas as rotas que precisam de proteção (parece estar, mas vale confirmar).**  
+- [ ] **Verificar se os dados enviados nas requisições para criação e atualização de agentes e casos seguem os schemas de validação para evitar erros 400.**  
+- [ ] **Certificar que o `.env` está sendo carregado no `server.js` com `require('dotenv').config()` para que as variáveis de ambiente estejam disponíveis.**  
+
+---
+
+Davi, você está no caminho certo! Esses ajustes vão destravar os testes base que são essenciais para a aprovação. Continue focado, pois a segurança e autenticação são partes cruciais em qualquer aplicação profissional. Se precisar, volte aos vídeos recomendados para reforçar os conceitos. Estou aqui para te ajudar sempre que precisar! 🚀💪
+
+Bora codar com segurança e qualidade! 👊
+
+Abraços e sucesso!  
+Seu Code Buddy 🤖❤️
 
 > Caso queira tirar uma dúvida específica, entre em contato com o Chapter no nosso [discord](https://discord.gg/DryuHVnz).
 
----
 
+
+---
 <sup>Made By the Autograder Team.</sup><br>&nbsp;&nbsp;&nbsp;&nbsp;<sup><sup>- [Arthur Carvalho](https://github.com/ArthurCRodrigues)</sup></sup><br>&nbsp;&nbsp;&nbsp;&nbsp;<sup><sup>- [Arthur Drumond](https://github.com/drumondpucminas)</sup></sup><br>&nbsp;&nbsp;&nbsp;&nbsp;<sup><sup>- [Gabriel Resende](https://github.com/gnvr29)</sup></sup>
