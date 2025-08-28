@@ -20,24 +20,31 @@ Neste arquivo você encontrará a estrutura de pastas do projeto as instruções
 │ │ └──20250809203342_solution_migrations.js
 │ │ └──20250810210628_create_agentes.js
 │ │ └──20250810213103_create_casos.js
+│ │ └──20250827212350_create_usuarios.js
 │ ├── seeds/
 │ │ └──agentes.js
 │ │ └──casos.js
-│ │ └──20250810213103_create_casos.js
+│ │ └──usuarios.js
+│ │ └──solution_migrations.js
 │ │
 │ └── db.js
 │
 ├── routes/
 │ ├── agentesRoutes.js
 │ └── casosRoutes.js
+| └── usuariosRoutes.js
+| └── authRoutes.js
 │
 ├── controllers/
 │ ├── agentesController.js
 │ └── casosController.js
+| └── usuariosController.js
+| └── authController.js
 │
 ├── repositories/
 │ ├── agentesRepository.js
 │ └── casosRepository.js
+| └── usuariosRepository.js
 │
 ├── utils/
 │ └── errorHandler.js
@@ -46,6 +53,9 @@ Neste arquivo você encontrará a estrutura de pastas do projeto as instruções
 │
 ├── docs/
 │   └── swagger.js
+│
+├── middlewares/
+│   └── authMiddleware.js
 │
 ```
 

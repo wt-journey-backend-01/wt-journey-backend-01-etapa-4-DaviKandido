@@ -14,7 +14,7 @@ const login = async (req, res, next) => {
     if (!user) {
       return next(
         new ApiError('Usuario nao encontrado', 404, {
-          email: 'usuario nao encontrado',
+          email: 'Email de usuário nao encontrado',
         })
       );
     }
@@ -29,11 +29,11 @@ const login = async (req, res, next) => {
       );
     }
 
-    const token = jwt.sign({ id: user.id, nome: user.nome, email: user.email }, JWT_SECRET, {
+    const acess_token = jwt.sign({ id: user.id, nome: user.nome, email: user.email }, JWT_SECRET, {
       expiresIn: '1h',
     });
 
-    res.cookie('token', token, {
+    res.cookie('acess_token', acess_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
@@ -43,7 +43,7 @@ const login = async (req, res, next) => {
 
     res.status(200).json({
       message: 'Login de usuário realizado com sucesso',
-      acess_token: token,
+      acess_token: acess_token,
     });
   } catch (error) {
     next(new ApiError('Erro ao fazer login', 500, error.message));
@@ -58,7 +58,7 @@ const signUp = async (req, res, next) => {
 
     if (user) {
       return next(
-        new ApiError('Usuario ja cadastrado', 400, {
+        new ApiError('Usuario ja cadastrado', 409, {
           email: 'Email ja cadastrado',
         })
       );
@@ -82,7 +82,7 @@ const signUp = async (req, res, next) => {
 };
 
 const logOut = async (req, res, next) => {
-  res.clearCookie('token', { path: '/' });
+  res.clearCookie('acess_token', { path: '/' });
   try {
     res.status(200).json({
       message: 'Logout realizado com sucesso',

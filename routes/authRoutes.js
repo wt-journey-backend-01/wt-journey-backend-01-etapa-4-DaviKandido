@@ -36,7 +36,7 @@ const { loginSchema, signUpSchema } = require('../utils/ZodSchemas');
  *     AuthResponse:
  *       type: object
  *       properties:
- *         token:
+ *         acess_token:
  *           type: string
  *         message:
  *           type: string
@@ -47,7 +47,7 @@ const { loginSchema, signUpSchema } = require('../utils/ZodSchemas');
  * /auth/login:
  *   post:
  *     summary: Login de usuário
- *     description: Realiza o login de um usuário e retorna um token de autenticação.
+ *     description: Realiza o login de um usuário e retorna um acess_token de autenticação.
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -134,7 +134,7 @@ router.post('/login', validateSchema(loginSchema), authController.login);
  *             examples:
  *               Success:
  *                 value:
- *                   token: abc123def456
+ *                   acess_token: abc123def456
  *                   message: Usuário criado com sucesso
  *       400:
  *         description: Dados incorretos
@@ -175,7 +175,7 @@ router.post('/register', validateSchema(signUpSchema), authController.signUp);
  * /auth/logout:
  *   post:
  *     summary: Logout do usuário
- *     description: Realiza o logout do usuário e invalida o token.
+ *     description: Realiza o logout do usuário e invalida o acess_token.
  *     tags: [Auth]
  *     responses:
  *       200:
@@ -187,7 +187,7 @@ router.post('/register', validateSchema(signUpSchema), authController.signUp);
  *               example:
  *                 message: Logout realizado com sucesso
  *       401:
- *         description: Token inválido ou ausente
+ *         description: acess_token inválido ou ausente
  *         content:
  *           application/json:
  *             schema:

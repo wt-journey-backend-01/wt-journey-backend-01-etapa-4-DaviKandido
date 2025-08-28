@@ -94,7 +94,7 @@ router.get('/', usuariosController.getUsuarios);
  *                 status: 500
  *                 message: Falha ao obter perfil
  */
-router.get('/me', authenticateToken, usuariosController.getProfile);
+router.use('/me', authenticateToken, usuariosController.getMe);
 
 /**
  * @openapi

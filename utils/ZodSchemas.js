@@ -79,15 +79,17 @@ const casoPutSchema = baseCasosSchema.strict();
 const casoPatchSchema = baseCasosSchema.strict().partial();
 
 const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
+//const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
 
 // Base user schema
 const baseUserSchema = z.object({
-  nome: z.string({
-    error: (issue) => {
-      issue.input === undefined ? 'Campo obrigatório' : 'Valor não é um string';
-    },
-  }),
+  nome: z
+    .string({
+      error: (issue) => {
+        issue.input === undefined ? 'Campo obrigatório' : 'Valor não é um string';
+      },
+    })
+    .min(1, "O campo 'nome' precisa ter pelo menos 1 caractere"),
   email: z
     .string({
       error: (issue) => {
@@ -102,11 +104,15 @@ const baseUserSchema = z.object({
         issue.input === undefined ? 'Campo obrigatório' : 'Valor não é um string';
       },
     })
-    .regex(passwordRegex, { message: 'Invalid password format' }),
+    .min(8, { message: 'Senha deve ter pelo menos 8 caracteres' })
+    .regex(/[a-z]/, { message: 'Senha deve conter letra minúscula' })
+    .regex(/[A-Z]/, { message: 'Senha deve conter letra maiúscula' })
+    .regex(/[0-9]/, { message: 'Senha deve conter número' })
+    .regex(/[^a-zA-Z0-9]/, { message: 'Senha deve conter caractere especial' }),
 });
 
 const signUpSchema = baseUserSchema.strict();
-const loginSchema = baseUserSchema.pick({
+const loginSchema = baseUserSchema.strict().pick({
   email: true,
   senha: true,
 });

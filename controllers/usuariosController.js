@@ -20,9 +20,10 @@ const getUsuarioById = async (req, res, next) => {
   }
 };
 
-const getProfile = async (req, res, next) => {
+const getMe = async (req, res, next) => {
   try {
-    const user = req.user;
+    const userId = req.user.id;
+    const user = await usuariosRepository.findById(userId);
 
     if (!user) {
       return next(
@@ -53,7 +54,7 @@ const deleteUsuario = async (req, res, next) => {
 
 module.exports = {
   getUsuarios,
-  getProfile,
+  getMe,
   getUsuarioById,
   deleteUsuario,
 };
