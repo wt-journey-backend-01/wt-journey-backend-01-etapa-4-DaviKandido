@@ -17,7 +17,7 @@ function authenticateToken(req, res, next) {
       );
     }
 
-    jwt.verify(access_token, process.env.JWT_SECRET || 'secret', (err, user) => {
+    jwt.verify(access_token, process.env.JWT_SECRET || 'segredo aqui', (err, user) => {
       if (err) {
         return next(
           new ApiError('access_token inválido ou expirado.', 401, {

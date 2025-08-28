@@ -29,9 +29,13 @@ const login = async (req, res, next) => {
       );
     }
 
-    const access_token = jwt.sign({ id: user.id, nome: user.nome, email: user.email }, JWT_SECRET, {
-      expiresIn: '1h',
-    });
+    const access_token = jwt.sign(
+      { id: user.id, nome: user.nome, email: user.email },
+      JWT_SECRET || 'segredo aqui',
+      {
+        expiresIn: '1h',
+      }
+    );
 
     res.cookie('access_token', access_token, {
       httpOnly: true,
