@@ -3,25 +3,25 @@ const ApiError = require('../utils/errorHandler');
 
 function authenticateToken(req, res, next) {
   try {
-    const cookieToken = req.cookies?.token;
+    const cookieToken = req.cookies?.access_token;
     const authHeader = req.headers['authorization'];
     const headerToken = authHeader && authHeader.split(' ')[1];
 
-    const acess_token = cookieToken || headerToken;
+    const access_token = cookieToken || headerToken;
 
-    if (!acess_token) {
+    if (!access_token) {
       return next(
-        new ApiError('Acess_token não fornecido.', 401, {
-          acess_token: 'Acess_token nao fornecido',
+        new ApiError('access_token não fornecido.', 401, {
+          access_token: 'access_token nao fornecido',
         })
       );
     }
 
-    jwt.verify(acess_token, process.env.JWT_SECRET || 'secret', (err, user) => {
+    jwt.verify(access_token, process.env.JWT_SECRET || 'secret', (err, user) => {
       if (err) {
         return next(
-          new ApiError('Acess_token inválido ou expirado.', 401, {
-            acess_token: err.message,
+          new ApiError('access_token inválido ou expirado.', 401, {
+            access_token: err.message,
           })
         );
       }

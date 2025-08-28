@@ -4,7 +4,8 @@ const ApiError = require('../utils/errorHandler');
 
 const getCasos = async (req, res, next) => {
   try {
-    const { agente_id = null, status = null } = req.query;
+    const agente_id = req.query.agente_id ? Number(req.query.agente_id) : null;
+    const status = req.query.status ? req.query.status : null;
 
     if (req.query.status) {
       if (req.query.status !== 'aberto' && req.query.status !== 'solucionado') {
@@ -20,7 +21,7 @@ const getCasos = async (req, res, next) => {
 
     const casos = await casosRepository.findAll({ agente_id, status });
 
-    if (req.query.agente_id) {
+    if (agente_id) {
       if (!casos || casos.length === 0) {
         return next(
           new ApiError('Casos nao encontrados', 404, [

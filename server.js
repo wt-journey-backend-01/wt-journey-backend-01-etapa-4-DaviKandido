@@ -9,7 +9,7 @@ app.use(cookieParser());
 
 const casosRouter = require('./routes/casosRoutes');
 const agentesRouter = require('./routes/agentesRoutes');
-const authController = require('./routes/authRoutes');
+const authRouter = require('./routes/authRoutes');
 const usuariosRouter = require('./routes/usuariosRoutes');
 
 const ApiError = require('./utils/errorHandler');
@@ -20,7 +20,7 @@ app.use((req, res, next) => {
 });
 
 app.use('/usuarios', usuariosRouter);
-app.use('/auth', authController);
+app.use('/auth', authRouter);
 app.use('/casos', casosRouter);
 app.use('/agentes', agentesRouter);
 

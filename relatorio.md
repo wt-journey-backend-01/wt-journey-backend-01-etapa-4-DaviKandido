@@ -60,7 +60,7 @@ Vou listar os grupos de testes que falharam e analisar o que provavelmente está
 
   Isso está correto, mas certifique-se que o banco está populado corretamente e que o ID buscado existe.
 
-- **Criação e atualização de agentes**: Os métodos `create`, `update` e `updatePartial` parecem corretos, mas atenção para o uso do `.returning('*')` que funciona no PostgreSQL. Se estiver usando outro banco ou ambiente, pode não funcionar.  
+- **Criação e atualização de agentes**: Os métodos `create`, `update` e `updatePartial` parecem corretos, mas atenção para o uso do `.returning('*')` que funciona no PostgreSQL. Se estiver usando outro banco ou ambiente, pode não funcionar.
 
   Além disso, no controller, ao criar um agente, você simplesmente retorna o objeto criado, mas não valida se o payload está correto antes. Pode ser que o middleware de validação não esteja bloqueando payloads incorretos.
 
@@ -130,7 +130,9 @@ const { z } = require('zod');
 
 const agentePostSchema = z.object({
   nome: z.string().min(1, 'Nome é obrigatório'),
-  dataDeIncorporacao: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Data deve estar no formato YYYY-MM-DD'),
+  dataDeIncorporacao: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Data deve estar no formato YYYY-MM-DD'),
   cargo: z.string().min(1, 'Cargo é obrigatório'),
 });
 ```
@@ -147,10 +149,10 @@ No seu middleware `authMiddleware.js`, você tenta obter o token do cookie `toke
 const cookieToken = req.cookies?.token;
 ```
 
-Mas no controller de login você salva o token no cookie com o nome `'acess_token'`:
+Mas no controller de login você salva o token no cookie com o nome `'access_token'`:
 
 ```js
-res.cookie('acess_token', acess_token, { ... });
+res.cookie('access_token', access_token, { ... });
 ```
 
 Ou seja, o middleware está buscando o cookie com nome diferente do que foi salvo. Isso fará com que o token nunca seja encontrado no cookie, e você só aceitará o token via header.
@@ -160,7 +162,7 @@ Ou seja, o middleware está buscando o cookie com nome diferente do que foi salv
 No middleware:
 
 ```js
-const cookieToken = req.cookies?.acess_token;
+const cookieToken = req.cookies?.access_token;
 ```
 
 Assim o token será capturado corretamente.
@@ -174,19 +176,19 @@ No seu controller `authController.js`, na função `login`, você retorna o toke
 ```js
 res.status(200).json({
   message: 'Login de usuário realizado com sucesso',
-  acess_token: acess_token,
+  access_token: access_token,
 });
 ```
 
-Mas o teste espera o objeto com a propriedade `acess_token` (note que está com "c" minúsculo, o correto é "access_token" com dois "c"?). Além disso, o exemplo no `INSTRUCTIONS.md` mostra:
+Mas o teste espera o objeto com a propriedade `access_token` (note que está com "c" minúsculo, o correto é "access_token" com dois "c"?). Além disso, o exemplo no `INSTRUCTIONS.md` mostra:
 
 ```json
 {
-  "acess_token": "token aqui"
+  "access_token": "token aqui"
 }
 ```
 
-Se o teste espera exatamente a propriedade `acess_token`, está ok. Só fique atento para usar sempre o mesmo nome (não misture `access_token` e `acess_token`).
+Se o teste espera exatamente a propriedade `access_token`, está ok. Só fique atento para usar sempre o mesmo nome (não misture `access_token` e `access_token`).
 
 ---
 
@@ -234,7 +236,7 @@ Isso evita erros de comparação com string e número no banco.
 
 ## 📋 Resumo dos Principais Pontos para Melhorar
 
-- [ ] **Corrigir o nome do cookie no middleware de autenticação** para `acess_token`, alinhando com o que é salvo no login. Isso pode estar bloqueando o acesso às rotas protegidas.
+- [ ] **Corrigir o nome do cookie no middleware de autenticação** para `access_token`, alinhando com o que é salvo no login. Isso pode estar bloqueando o acesso às rotas protegidas.
 
 - [ ] **Revisar os schemas Zod usados para validar agentes e casos**, garantindo que cobrem todos os campos obrigatórios e tipos corretos, para evitar payloads inválidos.
 
@@ -250,7 +252,7 @@ Isso evita erros de comparação com string e número no banco.
 
 ## Finalizando 🚀
 
-Davi, você está muito perto de entregar uma aplicação completa e segura! A base está muito boa, principalmente no que toca usuários e autenticação. Agora é só ajustar os detalhes que mencionei para agentes e casos, e você vai destravar todos os testes.  
+Davi, você está muito perto de entregar uma aplicação completa e segura! A base está muito boa, principalmente no que toca usuários e autenticação. Agora é só ajustar os detalhes que mencionei para agentes e casos, e você vai destravar todos os testes.
 
 Continue firme, revise com calma cada ponto e não hesite em usar os recursos que te indiquei para aprofundar seus conhecimentos! Você está no caminho certo para se tornar um mestre em Node.js e APIs seguras! 💪✨
 
@@ -265,26 +267,26 @@ Abraço forte e bons códigos! 👮‍♂️👩‍💻
 ```js
 function authenticateToken(req, res, next) {
   try {
-    // Corrigido para buscar o cookie com nome 'acess_token'
-    const cookieToken = req.cookies?.acess_token;
+    // Corrigido para buscar o cookie com nome 'access_token'
+    const cookieToken = req.cookies?.access_token;
     const authHeader = req.headers['authorization'];
     const headerToken = authHeader && authHeader.split(' ')[1];
 
-    const acess_token = cookieToken || headerToken;
+    const access_token = cookieToken || headerToken;
 
-    if (!acess_token) {
+    if (!access_token) {
       return next(
-        new ApiError('Acess_token não fornecido.', 401, {
-          acess_token: 'Acess_token nao fornecido',
+        new ApiError('access_token não fornecido.', 401, {
+          access_token: 'access_token nao fornecido',
         })
       );
     }
 
-    jwt.verify(acess_token, process.env.JWT_SECRET || 'secret', (err, user) => {
+    jwt.verify(access_token, process.env.JWT_SECRET || 'secret', (err, user) => {
       if (err) {
         return next(
-          new ApiError('Acess_token inválido ou expirado.', 401, {
-            acess_token: err.message,
+          new ApiError('access_token inválido ou expirado.', 401, {
+            access_token: err.message,
           })
         );
       }
@@ -304,7 +306,6 @@ Continue assim, você está indo muito bem! 👏👏👏
 
 > Caso queira tirar uma dúvida específica, entre em contato com o Chapter no nosso [discord](https://discord.gg/DryuHVnz).
 
-
-
 ---
+
 <sup>Made By the Autograder Team.</sup><br>&nbsp;&nbsp;&nbsp;&nbsp;<sup><sup>- [Arthur Carvalho](https://github.com/ArthurCRodrigues)</sup></sup><br>&nbsp;&nbsp;&nbsp;&nbsp;<sup><sup>- [Arthur Drumond](https://github.com/drumondpucminas)</sup></sup><br>&nbsp;&nbsp;&nbsp;&nbsp;<sup><sup>- [Gabriel Resende](https://github.com/gnvr29)</sup></sup>

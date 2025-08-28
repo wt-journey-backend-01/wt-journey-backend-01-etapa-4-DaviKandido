@@ -29,11 +29,11 @@ const login = async (req, res, next) => {
       );
     }
 
-    const acess_token = jwt.sign({ id: user.id, nome: user.nome, email: user.email }, JWT_SECRET, {
+    const access_token = jwt.sign({ id: user.id, nome: user.nome, email: user.email }, JWT_SECRET, {
       expiresIn: '1h',
     });
 
-    res.cookie('acess_token', acess_token, {
+    res.cookie('access_token', access_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
@@ -43,7 +43,7 @@ const login = async (req, res, next) => {
 
     res.status(200).json({
       message: 'Login de usuário realizado com sucesso',
-      acess_token: acess_token,
+      access_token: access_token,
     });
   } catch (error) {
     next(new ApiError('Erro ao fazer login', 500, error.message));
@@ -82,7 +82,7 @@ const signUp = async (req, res, next) => {
 };
 
 const logOut = async (req, res, next) => {
-  res.clearCookie('acess_token', { path: '/' });
+  res.clearCookie('access_token', { path: '/' });
   try {
     res.status(200).json({
       message: 'Logout realizado com sucesso',
