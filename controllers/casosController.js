@@ -74,7 +74,10 @@ const getSearch = async (req, res, next) => {
 
 const getCasoById = async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const id = Number(req.params.id);
+    if (isNaN(id)) {
+      return next(new ApiError('ID inválido', 400));
+    }
     const caso = await casosRepository.findById(id);
 
     if (!caso) {
@@ -135,7 +138,10 @@ const createCaso = async (req, res, next) => {
 
 const updateCaso = async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const id = Number(req.params.id);
+    if (isNaN(id)) {
+      return next(new ApiError('ID inválido', 400));
+    }
     const caso = req.body;
 
     const agente = await agentesRepository.findById(caso.agente_id);
@@ -157,7 +163,10 @@ const updateCaso = async (req, res, next) => {
 
 const updateCasoPartial = async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const id = Number(req.params.id);
+    if (isNaN(id)) {
+      return next(new ApiError('ID inválido', 400));
+    }
     const casoPartial = req.body;
 
     if (casoPartial.agente_id) {
@@ -181,7 +190,11 @@ const updateCasoPartial = async (req, res, next) => {
 
 const deleteCaso = async (req, res, next) => {
   try {
-    const deleted = await casosRepository.remove(req.params.id);
+    const id = Number(req.params.id);
+    if (isNaN(id)) {
+      return next(new ApiError('ID inválido', 400));
+    }
+    const deleted = await casosRepository.remove(id);
 
     if (!deleted) {
       return next(new ApiError('Caso nao encontrado', 404));

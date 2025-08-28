@@ -46,7 +46,10 @@ const getAgentes = async (req, res, next) => {
 
 const getAgenteById = async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const id = Number(req.params.id);
+    if (isNaN(id)) {
+      return next(new ApiError('ID inválido', 400));
+    }
     const agente = await agentesRepository.findById(id);
 
     if (!agente) {
@@ -67,7 +70,10 @@ const getAgenteById = async (req, res, next) => {
 
 const getCasosByAgenteId = async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const id = Number(req.params.id);
+    if (isNaN(id)) {
+      return next(new ApiError('ID inválido', 400));
+    }
     const agente = await agentesRepository.findById(id);
 
     if (!agente) {
@@ -101,7 +107,10 @@ const createAgente = async (req, res, next) => {
 
 const updateAgente = async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const id = Number(req.params.id);
+    if (isNaN(id)) {
+      return next(new ApiError('ID inválido', 400));
+    }
     const agente = req.body;
     const agenteAtualizado = await agentesRepository.update(id, agente);
 
@@ -123,7 +132,11 @@ const updateAgente = async (req, res, next) => {
 
 const updateAgentePartial = async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const id = Number(req.params.id);
+    if (isNaN(id)) {
+      return next(new ApiError('ID inválido', 400));
+    }
+
     const agentePartial = req.body;
     const agenteAtualizado = await agentesRepository.updatePartial(id, agentePartial);
 
@@ -145,7 +158,10 @@ const updateAgentePartial = async (req, res, next) => {
 
 const deleteAgente = async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const id = Number(req.params.id);
+    if (isNaN(id)) {
+      return next(new ApiError('ID inválido', 400));
+    }
     const deleted = await agentesRepository.remove(id);
 
     if (!deleted) {

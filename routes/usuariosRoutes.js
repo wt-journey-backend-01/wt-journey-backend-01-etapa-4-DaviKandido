@@ -26,6 +26,41 @@ const usuariosController = require('../controllers/usuariosController');
 
 /**
  * @openapi
+ * /usuarios/me:
+ *   get:
+ *     summary: Retorna o perfil do usuário logado
+ *     description: Retorna os dados do usuário autenticado.
+ *     tags: [Usuarios]
+ *     responses:
+ *       200:
+ *         description: Perfil retornado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Usuario'
+ *       401:
+ *         description: Não autorizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               example:
+ *                 status: 401
+ *                 message: Não autorizado
+ *       500:
+ *         description: Falha ao obter perfil
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               example:
+ *                 status: 500
+ *                 message: Falha ao obter perfil
+ */
+router.get('/me', authenticateToken, usuariosController.getMe);
+
+/**
+ * @openapi
  * /usuarios:
  *   get:
  *     summary: Lista todos os usuários
@@ -60,41 +95,6 @@ const usuariosController = require('../controllers/usuariosController');
  *                 message: Falha ao obter usuários
  */
 router.get('/', usuariosController.getUsuarios);
-
-/**
- * @openapi
- * /usuarios/me:
- *   get:
- *     summary: Retorna o perfil do usuário logado
- *     description: Retorna os dados do usuário autenticado.
- *     tags: [Usuarios]
- *     responses:
- *       200:
- *         description: Perfil retornado com sucesso
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Usuario'
- *       401:
- *         description: Não autorizado
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               example:
- *                 status: 401
- *                 message: Não autorizado
- *       500:
- *         description: Falha ao obter perfil
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               example:
- *                 status: 500
- *                 message: Falha ao obter perfil
- */
-router.use('/me', authenticateToken, usuariosController.getMe);
 
 /**
  * @openapi

@@ -149,14 +149,14 @@ router.post('/login', validateSchema(loginSchema), authController.login);
  *                   - nome: Campo obrigatório
  *                   - email: Campo obrigatório
  *                   - senha: Campo obrigatório
- *       409:
+ *       400:
  *         description: Usuário já existe
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               example:
- *                 status: 409
+ *                 status: 400
  *                 message: Usuário já cadastrado
  *       500:
  *         description: Erro interno

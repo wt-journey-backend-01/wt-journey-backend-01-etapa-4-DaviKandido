@@ -58,7 +58,7 @@ const signUp = async (req, res, next) => {
 
     if (user) {
       return next(
-        new ApiError('Usuario ja cadastrado', 409, {
+        new ApiError('Usuario ja cadastrado', 400, {
           email: 'Email ja cadastrado',
         })
       );
